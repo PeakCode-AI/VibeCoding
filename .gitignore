@@ -16,6 +16,10 @@
 !**/env/.env.development
 !**/env/.env.test
 !**/env/.env.production
+# 生产部署真实密钥 —— 严禁入库（仅保留 .example）
+deploy/prod/.env
+deploy/prod/.env.*
+!deploy/prod/.env.production.example
 
 # Python
 **/__pycache__/
