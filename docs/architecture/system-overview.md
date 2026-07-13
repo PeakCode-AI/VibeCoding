@@ -147,8 +147,10 @@ VibeBase Web ──┘                                  │
 | --- | --- | --- |
 | VibeAdmin 前端 | 80 / 5173 | Nginx 反代 `/api/` → 8080 |
 | VibeAdmin 后端 | 8080 | FastAPI |
-| VibeBase 前端 | 80 / 5175 | Nginx（Docker 多阶段） |
-| VibeBase 后端 | 8081 / 8881 | FastAPI（API / 管理） |
-| PostgreSQL | 5432 | VibeBase 主库 |
+| VibeBase 前端 | 80 / 5175 | Nginx 反代 `/api/` → 8081 |
+| VibeBase 后端 | 8081 | FastAPI |
+| PostgreSQL | 5432（项目）/ 5433（monorepo 中间件） | Admin / Base 共享主库 |
+| Redis | 6379 | 缓存 / 限流 |
+| MinIO | 9000 / 9001 | 对象存储（S3 API / 控制台） |
 
 详细部署方式见 [../guides/deployment.md](../guides/deployment.md)。

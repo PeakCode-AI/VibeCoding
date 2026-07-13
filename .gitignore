@@ -1,0 +1,68 @@
+# macOS / IDE
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Env secrets (keep *.example)
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+!**/env/.env.development
+!**/env/.env.test
+!**/env/.env.production
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/venv/
+**/.pytest_cache/
+**/.mypy_cache/
+**/*.egg-info/
+**/dist/
+**/build/
+**/.coverage
+**/htmlcov/
+**/.ruff_cache/
+
+# Node
+**/node_modules/
+**/.pnpm-store/
+**/dist/
+**/.vite/
+**/*.tsbuildinfo
+**/stats.html
+
+# Flutter
+**/VibeApp/.dart_tool/
+**/VibeApp/.flutter-plugins
+**/VibeApp/.flutter-plugins-dependencies
+**/VibeApp/.packages
+**/VibeApp/build/
+**/VibeApp/.pub-cache/
+**/VibeApp/ios/Pods/
+**/VibeApp/ios/.symlinks/
+**/VibeApp/android/.gradle/
+**/VibeApp/android/local.properties
+**/VibeApp/android/app/debug/
+**/VibeApp/android/app/profile/
+**/VibeApp/android/app/release/
+
+# Logs / temp
+*.log
+tmp/
+temp/
+.cache/
+
+# Docker volumes / local data
+**/pgdata/
+**/redisdata/
+
+# Trae / agent scratch (optional local)
+.trae/

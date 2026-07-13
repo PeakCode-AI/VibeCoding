@@ -40,7 +40,6 @@ docker-compose up -d
 ```
 - 前端：http://localhost
 - 后端 API：http://localhost:8081
-- 后端管理：http://localhost:8881
 
 ### 单独开发
 ```bash
@@ -87,6 +86,6 @@ pnpm build:mp            # 微信小程序生产构建
 | 项目 | 启动命令 | 前端端口 | 后端端口 |
 | --- | --- | --- | --- |
 | VibeAdmin | `docker compose up` / 源码运行 | 5173(开发) / 80 | 8080 |
-| VibeBase | `docker-compose up` / `start_dev.sh` | 80 / 5175(开发) | 8081 / 8881 |
+| VibeBase | `docker-compose up` / `start_dev.sh` | 80 / 5175(开发) | 8081 |
 | VibeApp | `flutter run` | — | — |
 | Vibe-Mp-H5 | `pnpm dev:h5` / `pnpm dev:mp` | 5174(H5) | — |
