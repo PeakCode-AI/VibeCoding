@@ -141,7 +141,12 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_BUCKET: ${S3_BUCKET:-vibe-storage}
-      PAYMENT_NOTIFY_SECRET: ${PAYMENT_NOTIFY_SECRET:-}
+      # ---- VibePay 免签支付网关（https://pay.vibeadmin.cn/docs）----
+      VIBEPAY_BASE_URL: ${VIBEPAY_BASE_URL:-https://pay.vibeadmin.cn}
+      VIBEPAY_CORPORATE_ID: ${VIBEPAY_CORPORATE_ID:-}
+      VIBEPAY_CORPORATE_SECRET: ${VIBEPAY_CORPORATE_SECRET:-}
+      VIBEPAY_APP_ID: ${VIBEPAY_APP_ID:-}
+      VIBEPAY_PUBLIC_BASE_URL: https://${PUBLIC_DOMAIN}
     depends_on:
       redis:
         condition: service_healthy
