@@ -128,6 +128,9 @@ services:
       VIBEPAY_CORPORATE_SECRET: ${VIBEPAY_CORPORATE_SECRET:-}
       VIBEPAY_APP_ID: ${VIBEPAY_APP_ID:-}
       VIBEPAY_PUBLIC_BASE_URL: https://${PUBLIC_DOMAIN}
+      # ---- 源码交付：GitHub 仓库协作者邀请（留空则人工交付）----
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_SOURCE_REPO: ${GITHUB_SOURCE_REPO:-PeakCode-AI/VibeCoding}
     depends_on:
       redis:
         condition: service_healthy

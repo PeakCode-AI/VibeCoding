@@ -147,6 +147,18 @@ services:
       VIBEPAY_CORPORATE_SECRET: ${VIBEPAY_CORPORATE_SECRET:-}
       VIBEPAY_APP_ID: ${VIBEPAY_APP_ID:-}
       VIBEPAY_PUBLIC_BASE_URL: https://${PUBLIC_DOMAIN}
+      # ---- 源码交付：GitHub 仓库协作者邀请（留空则人工交付）----
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_SOURCE_REPO: ${GITHUB_SOURCE_REPO:-PeakCode-AI/VibeCoding}
+      # ---- 邮箱验证码 SMTP（复用 VibePay 企业邮箱）----
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-VibeBase}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-true}
+      EMAIL_CODE_EXPIRE_SECONDS: ${EMAIL_CODE_EXPIRE_SECONDS:-300}
+      EMAIL_CODE_RESEND_SECONDS: ${EMAIL_CODE_RESEND_SECONDS:-60}
     depends_on:
       redis:
         condition: service_healthy
