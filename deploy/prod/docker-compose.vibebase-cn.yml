@@ -1,0 +1,200 @@
+# 生产环境 Docker Compose 编排 —— vibebase.vibeadmin.cn（服务器 13.211.173.144）
+#
+# 与 www.vibeadmin.cn 版(docker-compose.prod.yml)的区别：
+#   1. 自带容器化 PostgreSQL（不依赖宝塔 PG），经服务名 postgres 连接，更独立可迁移；
+#   2. 后端宿主端口改用 18080/18081，规避该共享服务器上已被占用的 8080(baymax)/8081(vibepay)；
+#   3. 前端容器端口 8090(VibeAdmin)/8091(VibeBase) 保持不变（服务器上空闲）。
+#
+# 架构：宝塔 Nginx (80/443, vibebase.vibeadmin.cn) 反代到本编排容器；容器仅绑定 127.0.0.1。
+#   VibeBase 主站 → /           (vibebase-web  127.0.0.1:8091)
+#   VibeAdmin 后台 → /admin/     (vibeadmin-web 127.0.0.1:8090)
+#   admin API      → /admin/api/ (vibeadmin-backend 127.0.0.1:18080，宝塔剥掉 /admin 前缀)
+#   VibeBase API   → /api/       (vibebase-backend  127.0.0.1:18081)
+#   H5             → /h5/        (宝塔直接托管静态)
+#   DOC 文档       → /docs/      (宝塔直接托管静态)
+#
+# 使用方式（服务器仓库根目录 /opt/vibe）：
+#   docker compose -f deploy/prod/docker-compose.vibebase-cn.yml \
+#     --env-file deploy/prod/.env.vibebase-cn up -d --build
+
+services:
+  # ---------- 中间件 ----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibe-cn-postgres
+    restart: unless-stopped
+    networks: [vibe-cn]
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - vibe_cn_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: vibe-cn-redis
+    restart: unless-stopped
+    networks: [vibe-cn]
+    volumes:
+      - vibe_cn_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: vibe-cn-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    networks: [vibe-cn]
+    ports:
+      - "127.0.0.1:9011:9001"   # 控制台仅本机（避开已占用的 9001 可能性）；S3 API 容器内部访问
+    volumes:
+      - vibe_cn_minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks: [vibe-cn]
+    entrypoint: >
+      /bin/sh -c "
+        mc config host add minio http://minio:9000 ${S3_ACCESS_KEY:-minioadmin} ${S3_SECRET_KEY:-minioadmin} &&
+        mc mb --ignore-existing minio/${S3_BUCKET:-vibe-storage} &&
+        mc anonymous set public minio/${S3_BUCKET:-vibe-storage} &&
+        echo 'MinIO bucket ready' && exit 0
+      "
+
+  # ---------- 后端（仅 127.0.0.1，宝塔反代）----------
+  vibeadmin-backend:
+    build:
+      context: ../..
+      dockerfile: VibeAdmin/vibe-admin/Dockerfile
+    image: vibe-cn-admin-backend:latest
+    container_name: vibe-cn-admin-backend
+    restart: unless-stopped
+    networks: [vibe-cn]
+    ports:
+      - "127.0.0.1:18080:8080"   # 宿主 18080 规避 8080 占用
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+      BACKEND_CORS_ORIGINS: ${CORS_ORIGINS}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-vibe-storage}
+      SEED_DB_ON_STARTUP: "false"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  vibebase-backend:
+    build:
+      context: ../../VibeBase/vibe-base
+      dockerfile: Dockerfile
+    image: vibe-cn-base-backend:latest
+    container_name: vibe-cn-base-backend
+    restart: unless-stopped
+    networks: [vibe-cn]
+    ports:
+      - "127.0.0.1:18081:8081"   # 宿主 18081 规避 8081 占用
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-qwen-plus}
+      VL_API_KEY: ${VL_API_KEY:-}
+      VL_BASE_URL: ${VL_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      VL_MODEL: ${VL_MODEL:-qwen-vl-plus}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-vibe-storage}
+      PAYMENT_NOTIFY_SECRET: ${PAYMENT_NOTIFY_SECRET:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      vibeadmin-backend:
+        condition: service_healthy   # Admin 先建表
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # ---------- 前端（仅 127.0.0.1，宝塔反代）----------
+  vibeadmin-web:
+    build:
+      context: ../../VibeAdmin/vibe-admin-web
+      dockerfile: Dockerfile
+      args:
+        # 后台部署在 /admin/ 子路径；API 走 /admin/api/v1（宝塔剥 /admin 反代到 vibeadmin-backend:8080）
+        VITE_SERVER_API_URL: https://${PUBLIC_DOMAIN}/admin
+        VITE_SERVER_API_PREFIX: /api/v1
+        VITE_BASE: /admin/
+    image: vibe-cn-admin-web:latest
+    container_name: vibe-cn-admin-web
+    restart: unless-stopped
+    networks: [vibe-cn]
+    ports:
+      - "127.0.0.1:8090:80"
+    depends_on:
+      vibeadmin-backend:
+        condition: service_healthy
+
+  vibebase-web:
+    build:
+      context: ../../VibeBase/vibe-base-web
+      dockerfile: Dockerfile
+    image: vibe-cn-base-web:latest
+    container_name: vibe-cn-base-web
+    restart: unless-stopped
+    networks: [vibe-cn]
+    ports:
+      - "127.0.0.1:8091:80"
+    depends_on:
+      vibebase-backend:
+        condition: service_healthy
+
+networks:
+  vibe-cn:
+    driver: bridge
+
+volumes:
+  vibe_cn_pg:
+  vibe_cn_redis:
+  vibe_cn_minio:

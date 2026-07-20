@@ -1,0 +1,47 @@
+# 适用于以仓库根目录为构建上下文的镜像（目前为 vibeadmin-backend，
+# dockerfile: VibeAdmin/vibe-admin/Dockerfile，context: 仓库根）。
+#
+# 关键：排除本地开发用 .env。VibeAdmin 的 app/__init__.py 会执行
+# load_dotenv(..., override=True)，一旦 .env 被打进镜像，会用本地开发值
+# （如 localhost:5433）覆盖 compose 注入的生产环境变量，导致连不上数据库。
+.env
+.env.*
+**/.env
+**/.env.*
+
+# VCS / 编辑器
+.git
+**/.git
+.trae
+**/.trae
+.zcode
+**/.zcode
+.cursor
+**/.cursor
+.vscode
+**/.vscode
+.idea
+**/.idea
+.DS_Store
+**/.DS_Store
+
+# 依赖与产物（后端镜像不需要，缩小构建上下文、加快构建）
+node_modules
+**/node_modules
+.venv
+**/.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+dist
+**/dist
+.pytest_cache
+**/.pytest_cache
+*.log
+
+# 文档与其它无关大目录（后端构建用不到）
+vibe-docs
+Vibe-Mp-H5
+VibeApp
+docs

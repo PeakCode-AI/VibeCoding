@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" width="600" height="380">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="account" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="earnGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="spendRed" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="txn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+    <marker id="arrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#10b981" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#e11d48" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="600" height="380" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="300" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#1e293b" text-anchor="middle">积分流转</text>
+  <text x="300" y="50" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">账户余额 + 流水明细 · 同一事务原子写入</text>
+
+  <!-- Section labels -->
+  <text x="150" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">充值 · 入账（earn）</text>
+  <text x="448" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#e11d48" text-anchor="middle">消费 · 扣减（spend）</text>
+
+  <!-- ===== Earn chain (left) ===== -->
+  <!-- 充值套餐 -->
+  <g filter="url(#shadow)">
+    <rect x="24" y="92" width="124" height="40" rx="8" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="24" y="92" width="4" height="40" fill="#10b981"/>
+    <text x="88" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b" text-anchor="middle">充值套餐</text>
+    <text x="88" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b" text-anchor="middle">¥ 选中金额档位</text>
+  </g>
+  <line x1="148" y1="112" x2="172" y2="112" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowGreen)"/>
+
+  <!-- 支付回调 -->
+  <g filter="url(#shadow)">
+    <rect x="176" y="92" width="120" height="40" rx="8" fill="url(#earnGreen)"/>
+    <text x="236" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">支付回调</text>
+    <text x="236" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#d1fae5" text-anchor="middle">支付成功 → webhook</text>
+  </g>
+
+  <!-- arrow down from 支付回调 to add_points -->
+  <line x1="236" y1="132" x2="236" y2="158" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowGreen)"/>
+
+  <!-- ===== Central account (point_accounts) ===== -->
+  <g filter="url(#shadow)">
+    <rect x="176" y="162" width="248" height="56" rx="10" fill="url(#account)"/>
+    <ellipse cx="206" cy="190" rx="14" ry="14" fill="#fff" fill-opacity="0.2"/>
+    <text x="206" y="195" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">¥</text>
+    <text x="312" y="184" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">point_accounts</text>
+    <text x="312" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#dbeafe" text-anchor="middle">积分账户 · 余额 balance</text>
+    <text x="312" y="212" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#dbeafe" text-anchor="middle">每用户一行 · UPDATE 行级锁</text>
+  </g>
+
+  <!-- ===== Spend chain (right) ===== -->
+  <!-- AI对话 -->
+  <g filter="url(#shadow)">
+    <rect x="452" y="92" width="124" height="40" rx="8" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="572" y="92" width="4" height="40" fill="#e11d48"/>
+    <text x="513" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#1e293b" text-anchor="middle">AI 对话</text>
+    <text x="513" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b" text-anchor="middle">触发 consume_points</text>
+  </g>
+  <line x1="452" y1="112" x2="428" y2="112" stroke="#e11d48" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowRed)"/>
+
+  <!-- consume_points box (above center-right, balances layout) -->
+  <g filter="url(#shadow)">
+    <rect x="304" y="92" width="124" height="40" rx="8" fill="url(#spendRed)"/>
+    <text x="366" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">consume_points</text>
+    <text x="366" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ffe4e6" text-anchor="middle">事务内扣减</text>
+  </g>
+  <line x1="366" y1="132" x2="350" y2="158" stroke="#e11d48" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowRed)"/>
+
+  <!-- ===== Transaction write (single transaction) ===== -->
+  <!-- arrows from account down to transaction -->
+  <path d="M236 218 L236 244" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowGreen)"/>
+  <path d="M350 218 L350 244" stroke="#e11d48" stroke-width="1.6" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowRed)"/>
+
+  <!-- Transaction wrapper (dashed border to emphasize atomicity) -->
+  <rect x="140" y="248" width="320" height="84" rx="10" fill="#fff" fill-opacity="0.5" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="300" y="266" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#7c3aed" text-anchor="middle">⟲ 单一数据库事务（atomic）</text>
+
+  <g filter="url(#shadow)">
+    <rect x="156" y="276" width="140" height="44" rx="8" fill="url(#account)"/>
+    <text x="226" y="294" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">UPDATE 账户余额</text>
+    <text x="226" y="308" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">point_accounts</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="304" y="276" width="140" height="44" rx="8" fill="url(#txn)"/>
+    <text x="374" y="294" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#fff" text-anchor="middle">INSERT 流水</text>
+    <text x="374" y="308" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ede9fe" text-anchor="middle">point_transactions</text>
+  </g>
+
+  <!-- "+" link between the two writes -->
+  <circle cx="300" cy="298" r="9" fill="#fff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="300" y="302" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#7c3aed" text-anchor="middle">+</text>
+
+  <!-- ===== Insufficient balance (402) note ===== -->
+  <g filter="url(#shadow)">
+    <rect x="452" y="162" width="124" height="40" rx="8" fill="#fff" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect x="572" y="162" width="4" height="40" fill="#f59e0b"/>
+    <text x="513" y="180" font-family="system-ui, -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#b45309" text-anchor="middle">余额不足</text>
+    <text x="513" y="194" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#92400e" text-anchor="middle">→ 402 拦截</text>
+  </g>
+  <!-- connector from consume_points to 402 -->
+  <path d="M428 112 Q470 112 470 138 Q470 162 452 162" stroke="#f59e0b" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
+  <text x="478" y="146" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-style="italic" fill="#b45309">余额&lt;单价</text>
+
+  <!-- ===== Legend ===== -->
+  <g>
+    <rect x="24" y="248" width="108" height="84" rx="8" fill="#fff" stroke="#bfdbfe"/>
+    <text x="78" y="264" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="700" fill="#1e293b" text-anchor="middle">图例</text>
+    <line x1="34" y1="278" x2="52" y2="278" stroke="#10b981" stroke-width="1.6" stroke-dasharray="4 3"/>
+    <text x="58" y="281" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">入账</text>
+    <line x1="34" y1="294" x2="52" y2="294" stroke="#e11d48" stroke-width="1.6" stroke-dasharray="4 3"/>
+    <text x="58" y="297" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">扣减</text>
+    <line x1="34" y1="310" x2="52" y2="310" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="58" y="313" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">事务边界</text>
+    <text x="78" y="326" font-family="system-ui, -apple-system, sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">账户+流水原子写</text>
+  </g>
+</svg>

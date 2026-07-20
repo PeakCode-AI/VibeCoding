@@ -1,6 +1,8 @@
 # Vibe — 全终端 AI 对话产品体系
 
-Vibe 是一套面向 **AI 对话产品** 的完整解决方案，覆盖 **管理端 / 用户端 / App / 小程序+H5** 四个终端。四个子项目工程独立、技术栈多样、业务数据共享，直接可用于上线运营。
+Vibe 是一套面向 **AI 对话产品商业化** 的完整解决方案，覆盖 **管理端 / 用户端 / App / 小程序+H5 / 支付中台** 五个终端。五大子项目工程独立、技术栈多样、业务数据共享，并补齐了**支付这一关键商业闭环**——直接可用于上线运营、收钱分账。
+
+> 💡 已部署服务入口：[支付中台 VibePay](https://pay.vibeadmin.cn/) · 运营后台 VibeAdmin · 用户端 VibeBase
 
 ---
 
@@ -22,23 +24,32 @@ Vibe 是一套面向 **AI 对话产品** 的完整解决方案，覆盖 **管理
         │                     │                       │
         └─────────────────────┼───────────────────────┘
                               │
-                     ┌────────▼────────┐
-                     │   VibeBase 后端 │
-                     │  (用户端 API)   │
-                     │  FastAPI(:8081) │
-                     └────────┬────────┘
-                              │
-                     ┌────────▼────────┐
-                     │   VibeAdmin 后端│
-                     │ (运营管理 API)   │
-                     │  FastAPI(:8080) │
-                     └────────┬────────┘
-                              │
-                     ┌────────▼────────┐
-                     │ PostgreSQL+Redis│
-                     │ (共享数据库)     │
-                     └─────────────────┘
-```
+                      ┌────────▼────────┐
+                      │   VibeBase 后端 │
+                      │  (用户端 API)   │
+                      │  FastAPI(:8081) │
+                      └────────┬────────┘
+                               │
+                      ┌────────▼────────┐
+                      │   VibeAdmin 后端│
+                      │ (运营管理 API)   │
+                      │  FastAPI(:8080) │
+                      └────────┬────────┘
+                               │
+                      ┌────────▼────────┐
+                      │   VibePay 支付  │
+                      │  中台 (免签支付) │
+                      │ Spring Boot(:8080)│
+                      │ pay.vibeadmin.cn│
+                      └────────┬────────┘
+                               │
+                      ┌────────▼────────┐
+                      │ PostgreSQL+Redis│
+                      │ (共享数据库)     │
+                      └─────────────────┘
+ ```
+
+> VibePay 是补齐商业化闭环的**支付中台**：提供免签约的个人收款能力（微信 / 支付宝），通过安卓监控端实时监听收款通知并异步回调 VibeBase，让充值订单「支付即到账」。详见 [VibePay/README.md](VibePay/vibePay/README.md) 与已部署站点 [https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)。
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -77,12 +88,16 @@ VibeBase Web ──┘                                  │
                  │                                        │
                  └── 同一 PostgreSQL + Redis ──────────────┘
 
-共享数据：
-  users / roles / user_roles         ← C端用户（Base 产品 + Admin 运营都操作同一张表）
-  recharge_orders / api_logs         ← 充值/日志（Base 产生数据，Admin 查看统计）
-  dialogs / histories                ← 对话记录（Base 产生，Admin 可查看）
-  admin_users / admin_roles          ← 管理员账号（仅 Admin 使用，与 C端用户分离）
-```
+ 共享数据：
+   users / roles / user_roles         ← C端用户（Base 产品 + Admin 运营都操作同一张表）
+   recharge_orders / api_logs         ← 充值/日志（Base 产生数据，Admin 查看统计）
+   dialogs / histories                ← 对话记录（Base 产生，Admin 可查看）
+   admin_users / admin_roles          ← 管理员账号（仅 Admin 使用，与 C端用户分离）
+
+ 支付闭环：
+   VibeBase 下单 → VibePay 生成收款二维码 → 用户微信/支付宝付款
+   → 安卓监控端监听通知栏 → VibePay 回调 VibeBase /notify → 积分入账
+ ```
 
 ---
 
@@ -94,6 +109,7 @@ VibeBase Web ──┘                                  │
 | **VibeBase** | 最终用户 | C 端 AI 对话 Web 产品 | Vue 3 + FastAPI + PostgreSQL/Redis |
 | **VibeApp** | 移动用户 | Flutter 跨端 App | Flutter 3.7+ + Riverpod + GoRouter |
 | **Vibe-Mp-H5** | 移动/微信用户 | 小程序 + H5 跨端 | uni-app + Vue 3 + TS + UnoCss + Wot UI |
+| **VibePay** | 运营/商户 | 支付中台（免签收款） | Spring Boot 2.1 + PostgreSQL + 安卓监控端 |
 
 ### 功能对照
 
@@ -115,8 +131,12 @@ VibeBase Web ──┘                                  │
 | 公告管理 | ✅ | — | — | — |
 | 系统配置 | ✅ | — | — | — |
 | 仪表盘趋势图 | ✅ | — | — | — |
+| 免签约收款（微信/支付宝） | ✅ | ✅* | ✅* | ✅* |
+| 支付订单 / 回调入账 | ✅ | — | — | — |
+| 收款二维码管理 | ✅ | — | — | — |
+| 多租户 / 应用接入 | ✅ | — | — | — |
 
-> ✅* = VibeApp 和 Vibe-Mp-H5 当前处于脚手架阶段，业务页面待开发，但技术栈和目录已就位。
+> ✅* = VibeApp 和 Vibe-Mp-H5 当前处于脚手架阶段，业务页面待开发，但技术栈和目录已就位；其充值流程最终由 VibePay 支付中台统一承接。
 
 ---
 
@@ -429,6 +449,85 @@ pnpm build:mp      # 小程序 → dist/build/mp-weixin
 
 </details>
 
+<details>
+<summary><strong>VibePay</strong> — 支付中台（免签收款，点击展开）</summary>
+
+### 定位
+
+Vibe 商业闭环的**支付中台**。为个人开发者、自媒体、电商店主提供**免签约、免营业执照**的微信 / 支付宝收款能力，资金直接到账你的个人账户，不经过任何第三方托管。通过安卓监控端实时监听收款通知栏消息，自动确认订单并异步回调业务系统（VibeBase），让「充值即到账」成为现实。
+
+已部署线上站点：[https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)
+
+### 为什么需要 VibePay
+
+| 痛点 | VibePay 解法 |
+| --- | --- |
+| 个人没有营业执照，无法签约微信/支付宝商户 | 免签约，用个人收款码即可收款 |
+| 资金被第三方平台托管，提现慢、有风险 | 收款即时到账你的微信/支付宝，不经过中间账户 |
+| 自己写支付对接成本高、要对账 | 安卓监控端自动监听通知、自动确认订单，免去人工对账 |
+| 多业务、多商户要隔离 | 多租户 + 应用接入模型，按 `corporateId` / `appId` 隔离 |
+
+### 技术栈
+
+| 分类 | 技术 |
+| --- | --- |
+| 后端框架 | Spring Boot 2.1.1 (Spring MVC / JPA) |
+| 数据库 | PostgreSQL（多租户 `tenant_id` 行级隔离） |
+| 二维码生成 | ZXing (core / javase) |
+| 监控端 | 安卓 App（监听通知栏 + 上报服务端，见 `vibePay-App/`） |
+| 运行环境 | Java 8（WAR 包，可直接 `java -jar`） |
+| 部署 | Docker / Docker Compose（内置多阶段构建） |
+
+### 核心功能
+
+- **免签约收款**：无需营业执照、无需繁琐签约，个人用户即可快速接入支付宝、微信收款。
+- **智能通知栏监控**：安卓监控端实时监听支付到账通知，自动确认订单状态，无需手动对账。
+- **开放 API**：创建订单 / 查询订单 / 订单状态 / 关闭订单 / 异步回调，完整覆盖接入场景。
+- **安全可靠**：通讯密钥签名验证、订单超时机制、异步回调确认，多层保障资金安全。
+- **二维码管理**：批量上传微信、支付宝收款二维码，支持固定金额与自动识别。
+- **数据可视化**：管理后台展示订单数据、收入统计、来源占比。
+- **多租户 SaaS**：按 `tenant_id` 行级隔离，每个租户独立通讯密钥、通知地址与收款码；进一步支持「公司级（Corporate）+ 应用级（App）」两层接入模型。
+
+### 与 Vibe 体系的关系
+
+```
+VibeBase 下单充值
+   │  调用 VibePay /createOrder
+   ▼
+VibePay 生成收款二维码 / 收银台链接
+   │  用户微信/支付宝扫码付款
+   ▼
+安卓监控端监听通知栏 → 上报 VibePay
+   │  VibePay 匹配订单 + 异步回调
+   ▼
+VibeBase /api/v1/recharge/notify → 积分入账
+```
+
+VibeBase 的充值模块（`api/v1/recharge.py`）对接 VibePay 的异步回调，实现「支付成功 → 积分自动到账」的完整商业闭环。
+
+### 启动方式
+
+```bash
+# Docker 一键启动（推荐，内置 PostgreSQL）
+cd VibePay/vibePay && docker compose up -d
+# 访问 https://pay.vibeadmin.cn/
+
+# 本地运行
+cd VibePay/vibePay
+mvn clean package
+java -jar target/mq-0.0.1-SNAPSHOT.war
+# 默认管理账号：admin / admin（首次启动随机生成 appKey，请务必修改）
+```
+
+### 文档与资源
+
+- 项目文档：`VibePay/vibePay/README.md`
+- 多租户 SaaS 设计：`VibePay/vibePay/docs/multi-tenant-design.md`
+- 安卓监控端源码：`VibePay/vibePay-App/`
+- 线上站点：[https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)
+
+</details>
+
 ---
 
 ## 六、目录结构全览
@@ -490,7 +589,17 @@ VibeCoding/
     │   └── store/              #   状态
     ├── env/                    #   环境变量
     └── scripts/                #   辅助脚本
-```
+
+└── VibePay/                    # 支付中台 — 免签收款（商业闭环关键一环）
+    ├── vibePay/                #   Spring Boot 服务端 + 管理后台前端 + 收银台
+    │   ├── src/main/java/com/vone/mq/  #   多租户 SaaS 后端
+    │   ├── src/main/resources/static/  #   管理后台 + 收银台页面
+    │   ├── src/main/webapp/    #   落地页 / 登录 / API 文档 / 收银台
+    │   ├── Dockerfile          #   多阶段构建（Maven + JRE）
+    │   ├── docker-compose.yml  #   一键部署（含 PostgreSQL）
+    │   └── docs/               #   多租户 SaaS 设计文档
+    └── vibePay-App/            #   安卓监控端（监听收款通知 + 上报）
+ ```
 
 ---
 
@@ -514,7 +623,19 @@ VibeCoding/
 | `tasks` | 共享 | 运营任务 | 仅 Admin |
 | `system_config` | 共享 | 系统设置 | 仅 Admin |
 
-> 详见 `vibe_common/models/` 下的 16 个模型文件。
+**VibePay（独立 PostgreSQL 库 `vibepay`）：**
+
+| 表名 | 用途 | 共享范围 |
+| --- | --- | --- |
+| `tenant` / `tenant_monitor` | 商户(租户) / 监控端状态 | 每租户隔离 |
+| `pay_order` | 支付订单 | 每租户隔离 |
+| `pay_qrcode` | 收款二维码 | 每租户隔离 |
+| `pay_app` | 应用级接入配置 | 每公司隔离 |
+| `tmp_price` / `ticket` | 金额去重 / 工单 | 每租户隔离 |
+
+> VibePay 使用独立的 PostgreSQL 实例（`vibepay` 库），与 VibeBase/VibeAdmin 的业务库解耦；二者通过 VibePay 的异步回调接口（`/notify`）与 VibeBase 充值模块对接，实现跨系统记账。
+
+> 详见 `vibe_common/models/` 下的 16 个模型文件（VibeBase/VibeAdmin）。
 
 ---
 
@@ -527,8 +648,10 @@ VibeCoding/
 | VibeAdmin 后端 | 8080 | FastAPI 接口 + `/docs` |
 | VibeBase 前端（Docker） | 80 | `docker-compose up` |
 | VibeBase 后端 | 8081 | FastAPI 接口 + `/docs` |
+| VibePay 后端 | 8080 | Spring Boot（线上 `pay.vibeadmin.cn`） |
+| VibePay PostgreSQL | 5432 | 支付库 `vibepay`（独立实例） |
 | Vibe-Mp-H5（H5 开发） | 5174 | `pnpm dev:h5` |
-| PostgreSQL | 5432 | 共享数据库 |
+| PostgreSQL | 5432 | 共享数据库（VibeBase/VibeAdmin） |
 | Redis | 6379 | 缓存/限流 |
 
 ---
@@ -558,6 +681,7 @@ VibeCoding/
 | VibeBase | `VibeBase/README.md` + `vibe-base-web/README.md` + `vibe-base/README.md` | 最终用户 / 前端开发者 / 后端开发者 |
 | VibeApp | `VibeApp/README.md` | Flutter 开发者 / 移动端产品人员 |
 | Vibe-Mp-H5 | `Vibe-Mp-H5/README.md` | 小程序开发者 / H5 开发者 |
+| VibePay | `VibePay/vibePay/README.md` + `VibePay/vibePay/docs/multi-tenant-design.md` | 商户 / 支付集成开发者（线上 [pay.vibeadmin.cn](https://pay.vibeadmin.cn/)） |
 | vibe_common | `vibe_common/README.md` | Python 后端开发者（模型维护者） |
 
 ---
@@ -570,4 +694,5 @@ VibeCoding/
 | VibeBase | MIT License |
 | VibeApp | 详见 `VibeApp/` 内许可说明 |
 | Vibe-Mp-H5 | MIT License（基于 unibest） |
+| VibePay | MIT License（免签支付中台，线上 [pay.vibeadmin.cn](https://pay.vibeadmin.cn/)） |
 | vibe_common | MIT License |

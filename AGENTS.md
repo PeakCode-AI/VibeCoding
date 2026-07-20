@@ -14,6 +14,7 @@ This repository is a multi-product workspace. Keep changes scoped to the relevan
   - `VibeBase/ui/`: HTML design prototypes.
 - `VibeApp/`: Flutter mobile app.
 - `Vibe-Mp-H5/`: uni-app mini-program/H5 app.
+- `VibePay/`: 免签支付中台（Spring Boot 服务端 `vibePay/` + 安卓监控端 `vibePay-App/`），补齐商业化「收钱」闭环。线上站点 [https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)。
 - `docs/`: shared architecture and deployment docs.
 
 ## Build, Test, and Development Commands

@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 480" width="560" height="480">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+    <marker id="arrowDownG" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+      <path d="M1,1 L4,6 L7,1" fill="none" stroke="#86efac" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowDownA" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+      <path d="M1,1 L4,6 L7,1" fill="none" stroke="#fcd34d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="560" height="480" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="280" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#1e293b" text-anchor="middle">JWT 双 Token 认证流程</text>
+  <text x="280" y="50" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">access (7天) 短期 + refresh (30天) 长期 · Redis 黑名单登出</text>
+
+  <!-- ===== Vertical flow (left column) ===== -->
+  <!-- Step 1: 用户登录 -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="74" width="290" height="44" rx="8" fill="url(#green)"/>
+    <circle cx="62" cy="96" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="100" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+    <text x="190" y="92" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">用户登录</text>
+    <text x="190" y="107" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#d1fae5" text-anchor="middle">POST /user/login · 校验账号密码</text>
+  </g>
+  <line x1="185" y1="118" x2="185" y2="136" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowDownG)"/>
+
+  <!-- Step 2: 签发双 Token -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="140" width="290" height="44" rx="8" fill="url(#green)"/>
+    <circle cx="62" cy="162" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="166" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+    <text x="190" y="158" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">签发双 Token</text>
+    <text x="190" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#d1fae5" text-anchor="middle">access (7天) + refresh (30天) 返回客户端</text>
+  </g>
+  <line x1="185" y1="184" x2="185" y2="202" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowDownG)"/>
+
+  <!-- Step 3: 请求带 Authorization -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="206" width="290" height="44" rx="8" fill="url(#green)"/>
+    <circle cx="62" cy="228" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="232" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+    <text x="190" y="224" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">请求携带 Token</text>
+    <text x="190" y="239" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#d1fae5" text-anchor="middle">Header: Authorization: Bearer xxx</text>
+  </g>
+  <line x1="185" y1="250" x2="185" y2="268" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowDownG)"/>
+
+  <!-- Step 4: get_login_user 校验链 (blue) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="272" width="290" height="52" rx="8" fill="url(#blue)"/>
+    <circle cx="62" cy="298" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="302" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+    <text x="195" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">get_login_user 依赖校验链</text>
+    <text x="195" y="305" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">白名单检查 → Token 解析 → Redis 黑名单</text>
+    <text x="195" y="317" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">→ 返回 UserPayload</text>
+  </g>
+  <line x1="185" y1="324" x2="185" y2="342" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowDownG)"/>
+
+  <!-- Step 5: access 过期换新 (green) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="346" width="290" height="44" rx="8" fill="url(#green)"/>
+    <circle cx="62" cy="368" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="372" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+    <text x="190" y="364" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">access 过期 → refresh 换新</text>
+    <text x="190" y="379" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#d1fae5" text-anchor="middle">POST /user/refresh · 双 Token 轮转</text>
+  </g>
+  <line x1="185" y1="390" x2="185" y2="408" stroke="#fcd34d" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowDownA)"/>
+
+  <!-- Step 6: 登出 黑名单 (amber) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="412" width="290" height="44" rx="8" fill="url(#amber)"/>
+    <circle cx="62" cy="434" r="11" fill="#fff" fill-opacity="0.25"/>
+    <text x="62" y="438" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+    <text x="190" y="430" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">登出 → Token 加入黑名单</text>
+    <text x="190" y="445" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#fef3c7" text-anchor="middle">POST /user/logout · 写入 Redis 黑名单拦截</text>
+  </g>
+
+  <!-- ===== Right column notes ===== -->
+  <!-- connector lines to notes -->
+  <g stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3" fill="none">
+    <line x1="330" y1="96" x2="360" y2="96"/>
+    <line x1="330" y1="162" x2="360" y2="162"/>
+    <line x1="330" y1="228" x2="360" y2="228"/>
+    <line x1="330" y1="298" x2="360" y2="298"/>
+    <line x1="330" y1="368" x2="360" y2="368"/>
+    <line x1="330" y1="434" x2="360" y2="434"/>
+  </g>
+
+  <!-- Note boxes -->
+  <g>
+    <rect x="360" y="78" width="176" height="36" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="78" width="3" height="36" fill="#10b981"/>
+    <text x="372" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">入口凭证</text>
+    <text x="372" y="107" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">账号/密码 或 第三方登录</text>
+
+    <rect x="360" y="144" width="176" height="36" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="144" width="3" height="36" fill="#10b981"/>
+    <text x="372" y="160" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">JWT Payload</text>
+    <text x="372" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">user_id · role · exp 过期时间</text>
+
+    <rect x="360" y="210" width="176" height="36" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="210" width="3" height="36" fill="#10b981"/>
+    <text x="372" y="226" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">每次请求</text>
+    <text x="372" y="239" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">所有受保护接口必带</text>
+
+    <rect x="360" y="276" width="176" height="44" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="276" width="3" height="44" fill="#3b82f6"/>
+    <text x="372" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">FastAPI Depends</text>
+    <text x="372" y="303" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">统一鉴权入口 · 白名单</text>
+    <text x="372" y="314" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">内的路径直接放行</text>
+
+    <rect x="360" y="350" width="176" height="36" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="350" width="3" height="36" fill="#10b981"/>
+    <text x="372" y="366" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">无感续期</text>
+    <text x="372" y="379" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">长 Token 换发，体验顺滑</text>
+
+    <rect x="360" y="416" width="176" height="36" rx="6" fill="#fff" stroke="#bfdbfe"/>
+    <rect x="360" y="416" width="3" height="36" fill="#f59e0b"/>
+    <text x="372" y="432" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#1e293b">主动失效</text>
+    <text x="372" y="445" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">未到期也可立即吊销</text>
+  </g>
+</svg>

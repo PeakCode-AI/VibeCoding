@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" width="600" height="420">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="sseGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+    <marker id="arrowR" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M1,1 L7,4.5 L1,8" fill="none" stroke="#86efac" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="600" height="420" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="300" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#1e293b" text-anchor="middle">对话流式响应流程</text>
+  <text x="300" y="50" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">一次对话的完整链路 · 先扣费后调用 · SSE 逐字推送</text>
+
+  <!-- ===== Main horizontal flow row (y center ~ 96) ===== -->
+  <!-- Step 1: 用户发送消息 -->
+  <g filter="url(#shadow)">
+    <rect x="20" y="72" width="124" height="48" rx="8" fill="url(#blue)"/>
+    <text x="82" y="92" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">1 用户发送</text>
+    <text x="82" y="107" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">POST /chat</text>
+  </g>
+  <line x1="144" y1="96" x2="160" y2="96" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 2: 中间件 -->
+  <g filter="url(#shadow)">
+    <rect x="164" y="72" width="124" height="48" rx="8" fill="url(#purple)"/>
+    <text x="226" y="89" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">2 中间件</text>
+    <text x="226" y="104" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ede9fe" text-anchor="middle">限流 → 认证</text>
+    <text x="226" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ede9fe" text-anchor="middle">get_login_user</text>
+  </g>
+  <line x1="288" y1="96" x2="304" y2="96" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 3: 解析能力定价 -->
+  <g filter="url(#shadow)">
+    <rect x="308" y="72" width="124" height="48" rx="8" fill="url(#blue)"/>
+    <text x="370" y="89" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">3 解析能力定价</text>
+    <text x="370" y="104" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">ability_code · AB001</text>
+    <text x="370" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">单价 5 积分</text>
+  </g>
+  <line x1="432" y1="96" x2="448" y2="96" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 4: 扣减积分 -->
+  <g filter="url(#shadow)">
+    <rect x="452" y="72" width="128" height="48" rx="8" fill="url(#teal)"/>
+    <text x="516" y="89" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">4 扣减积分</text>
+    <text x="516" y="104" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ccfbf1" text-anchor="middle">consume_points</text>
+    <text x="516" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ccfbf1" text-anchor="middle">事务内余额校验</text>
+  </g>
+
+  <!-- wrap-down: step 4 -> step 5 (below) -->
+  <path d="M516 120 L516 138 L82 138 L82 156" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowR)"/>
+
+  <!-- ===== Second row (y center ~ 180) ===== -->
+  <!-- Step 5: 加载历史 -->
+  <g filter="url(#shadow)">
+    <rect x="20" y="156" width="124" height="48" rx="8" fill="url(#blue)"/>
+    <text x="82" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">5 加载历史</text>
+    <text x="82" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">最近 10 条上下文</text>
+    <text x="82" y="199" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#dbeafe" text-anchor="middle">拼接 prompt</text>
+  </g>
+  <line x1="144" y1="180" x2="160" y2="180" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 6: 流式调用 LLM -->
+  <g filter="url(#shadow)">
+    <rect x="164" y="156" width="124" height="48" rx="8" fill="url(#purple)"/>
+    <text x="226" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">6 流式调用 LLM</text>
+    <text x="226" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ede9fe" text-anchor="middle">SDK chat stream</text>
+    <text x="226" y="199" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ede9fe" text-anchor="middle">逐 chunk 产出</text>
+  </g>
+  <line x1="288" y1="180" x2="304" y2="180" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 7: SSE 推送 (green - branching point) -->
+  <g filter="url(#shadow)">
+    <rect x="308" y="156" width="124" height="48" rx="8" fill="url(#sseGreen)"/>
+    <text x="370" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">7 SSE 逐字推送</text>
+    <text x="370" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#d1fae5" text-anchor="middle">yield event-stream</text>
+    <text x="370" y="199" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#d1fae5" text-anchor="middle">response_chunk</text>
+  </g>
+  <line x1="432" y1="180" x2="448" y2="180" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowR)"/>
+
+  <!-- Step 8: 持久化 -->
+  <g filter="url(#shadow)">
+    <rect x="452" y="156" width="128" height="48" rx="8" fill="url(#teal)"/>
+    <text x="516" y="173" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">8 持久化</text>
+    <text x="516" y="188" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ccfbf1" text-anchor="middle">写 chat_messages</text>
+    <text x="516" y="199" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#ccfbf1" text-anchor="middle">写 api_logs 审计</text>
+  </g>
+
+  <!-- ===== SSE events branch (below step 7) ===== -->
+  <!-- branch connector from step 7 down -->
+  <path d="M370 204 L370 232" stroke="#86efac" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowG)"/>
+
+  <!-- SSE branch label -->
+  <text x="384" y="222" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-style="italic" fill="#059669">SSE 事件序列</text>
+
+  <!-- SSE events timeline (vertical) -->
+  <g>
+    <!-- llm_start -->
+    <rect x="270" y="240" width="92" height="30" rx="15" fill="#fff" stroke="#10b981"/>
+    <text x="316" y="259" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#059669" text-anchor="middle">llm_start</text>
+
+    <line x1="316" y1="270" x2="316" y2="282" stroke="#86efac" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowG)"/>
+
+    <!-- response_chunk -->
+    <rect x="270" y="286" width="92" height="30" rx="15" fill="#fff" stroke="#10b981"/>
+    <text x="316" y="305" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#059669" text-anchor="middle">response_chunk ×N</text>
+
+    <line x1="316" y1="316" x2="316" y2="328" stroke="#86efac" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowG)"/>
+
+    <!-- llm_end -->
+    <rect x="270" y="332" width="92" height="30" rx="15" fill="#fff" stroke="#10b981"/>
+    <text x="316" y="351" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#059669" text-anchor="middle">llm_end</text>
+
+    <line x1="316" y1="362" x2="316" y2="374" stroke="#86efac" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowG)"/>
+
+    <!-- [DONE] -->
+    <rect x="270" y="378" width="92" height="30" rx="15" fill="#059669"/>
+    <text x="316" y="397" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="600" fill="#fff" text-anchor="middle">[DONE]</text>
+  </g>
+
+  <!-- SSE event detail notes on the right -->
+  <g>
+    <text x="384" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 会话开始，返回 message_id</text>
+    <text x="384" y="306" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 每个 token 增量片段</text>
+    <text x="384" y="352" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 统计 tokens · 完整内容</text>
+    <text x="384" y="398" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 关闭流，触发落库</text>
+  </g>
+
+  <!-- Legend bottom-left -->
+  <g>
+    <rect x="20" y="240" width="232" height="40" rx="8" fill="#fff" stroke="#bfdbfe"/>
+    <text x="32" y="256" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#1e293b">设计要点</text>
+    <text x="32" y="270" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 先扣费后调用，失败可回滚</text>
+    <text x="32" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 响应边生成边推流，体验即时</text>
+  </g>
+
+  <!-- bottom note area -->
+  <rect x="20" y="290" width="232" height="40" rx="8" fill="#fff" stroke="#bfdbfe"/>
+  <text x="32" y="306" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#1e293b">失败兜底</text>
+  <text x="32" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· LLM 异常 → 退还积分</text>
+  <text x="32" y="331" font-family="system-ui, -apple-system, sans-serif" font-size="8.5" fill="#64748b">· 扣费不足 → 402 直接拦截</text>
+</svg>

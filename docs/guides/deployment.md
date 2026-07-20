@@ -21,6 +21,7 @@
 | VibeBase 后端 | 8081 | 8081 | FastAPI + Uvicorn |
 | Vibe-Mp-H5（H5） | 5174 | 80 | `pnpm dev:h5` 开发；生产为静态产物 |
 | Vibe-Mp-H5（小程序） | — | — | 微信开发者工具导入 `dist/dev/mp-weixin` |
+| VibePay 后端 | 8080 | 80 / 443 | Spring Boot（线上 `pay.vibeadmin.cn`） |
 
 ### 中间件
 
@@ -69,10 +70,20 @@
 - **iOS**：`flutter build ipa`，通过 Xcode 签名（证书 + Provisioning Profile）后上传 App Store Connect。
 - 发布前在 `lib/core/` 配置生产环境后端地址（指向 VibeBase API `https://<域名>/api/`），版本号在 `pubspec.yaml` 维护。
 
-## 6. 部署建议
+## 6. VibePay 部署（支付中台）
+
+VibePay 是商业化闭环的「收钱」环节，已部署线上站点 [https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)。详见 `VibePay/vibePay/README.md`。要点：
+
+- **Docker Compose（推荐）**：`cd VibePay/vibePay && docker compose up -d`，编排 Spring Boot 服务（8080）+ 独立 PostgreSQL（`vibepay` 库，数据持久化于具名卷 `vibepay-pgdata`）。
+- **本地运行**：`mvn clean package && java -jar target/mq-0.0.1-SNAPSHOT.war`，默认端口 8080。
+- **环境变量**：通过 `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASS` / `SERVER_PORT` 指定连接与端口。
+- **Nginx 反代**：对外暴露 80/443，将域名（如 `pay.vibeadmin.cn`）反代到 `vibepay:8080`；回调地址在后台配置为 VibeBase 的 `/api/v1/recharge/notify`。
+- **安卓监控端**：商户在后台生成绑定二维码，安装 `VibePay/vibePay-App/` 并扫码绑定，用于监听微信/支付宝收款通知。
+
+## 7. 部署建议
 
 1. **环境隔离**：dev / test / prod 使用不同 `.env` 与数据库实例。
-2. **反向代理**：统一由 Nginx 暴露 80/443，按路径（`/api/`、`/admin/`）分流到各后端。
-3. **数据库**：生产统一使用 PostgreSQL 16，做好备份与恢复（参考各项目数据库文档）。
-4. **密钥管理**：JWT 密钥、数据库密码等通过 `.env` 注入，避免入库；仓库内所有占位密钥（如 `vibe-dev-shared-secret-change-in-prod`、`minioadmin`）**上线前必须替换**。
+2. **反向代理**：统一由 Nginx 暴露 80/443，按路径（`/api/`、`/admin/`）分流到各后端；VibePay 走独立域名（如 `pay.vibeadmin.cn`）。
+3. **数据库**：生产统一使用 PostgreSQL 16，做好备份与恢复（参考各项目数据库文档）。VibePay 使用独立 `vibepay` 库，与业务库解耦。
+4. **密钥管理**：JWT 密钥、数据库密码、VibePay 通讯密钥（appKey）等通过 `.env` 注入，避免入库；仓库内所有占位密钥（如 `vibe-dev-shared-secret-change-in-prod`、`minioadmin`）**上线前必须替换**。
 5. **中间件**：monorepo 提供 `docker-compose.middleware.yml` 统一编排 PG/Redis/MinIO，生产可复用或替换为托管服务。

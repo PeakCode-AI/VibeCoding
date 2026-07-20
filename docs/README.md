@@ -22,4 +22,5 @@
 - VibeBase：`VibeBase/README.md`（项目总览）→ `VibeBase/vibe-base-web/README.md`（前端详细文档）→ `VibeBase/vibe-base/README.md`（后端详细文档）
 - VibeApp：`VibeApp/README.md`
 - Vibe-Mp-H5：`Vibe-Mp-H5/README.md`
+- VibePay：`VibePay/vibePay/README.md`（支付中台总览）→ `VibePay/vibePay/docs/multi-tenant-design.md`（多租户 SaaS 设计）→ 线上站点 [https://pay.vibeadmin.cn/](https://pay.vibeadmin.cn/)
 - vibe_common：`vibe_common/README.md`（共享库模型/DB/Redis/安全）

@@ -1,0 +1,15 @@
+{
+  "name": "vibe-docs",
+  "version": "1.0.0",
+  "description": "VibeBase 官方文档 — 基于 VitePress 构建",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
