@@ -70,3 +70,7 @@ temp/
 
 # Trae / agent scratch (optional local)
 .trae/
+.playwright-cli/
+dump.rdb
+login.yaml
+.zcode/
