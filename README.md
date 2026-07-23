@@ -92,7 +92,16 @@ VibeBase Web ──┘                                  │
    users / roles / user_roles         ← C端用户（Base 产品 + Admin 运营都操作同一张表）
    recharge_orders / api_logs         ← 充值/日志（Base 产生数据，Admin 查看统计）
    dialogs / histories                ← 对话记录（Base 产生，Admin 可查看）
+   llm_providers                     ← 模型供应商配置（Admin 加密写入 API Key，Base 代理读取解密）
+   agents                             ← 轻量智能体（Base 产生，自定义 system_prompt + 模型绑定）
+   api_keys                           ← 用户 API Key（vb-xxx，代理端点鉴权用）
    admin_users / admin_roles          ← 管理员账号（仅 Admin 使用，与 C端用户分离）
+
+ AI 代理架构：
+   Admin 配置 LLM 供应商（API Key 加密入库）
+   → 移动端/第三方用 vb-xxx Key 调 VibeBase /v1/chat/completions
+   → VibeBase 解密供应商 Key → 转发到真实 LLM（Deepseek/OpenAI 等）
+   → 流式返回 OpenAI 兼容 SSE → 记录 Token 用量 + 扣积分
 
  支付闭环：
    VibeBase 下单 → VibePay 生成收款二维码 → 用户微信/支付宝付款
@@ -115,9 +124,11 @@ VibeBase Web ──┘                                  │
 
 | 功能 | VibeAdmin | VibeBase | VibeApp | Vibe-Mp-H5 |
 | --- | :---: | :---: | :---: | :---: |
-| AI 智能对话 | — | ✅ | ✅* | ✅* |
-| 用户注册/登录 | — | ✅ | ✅* | ✅* |
-| 积分充值 | — | ✅ | ✅* | ✅* |
+| AI 智能对话 | — | ✅ | ✅ | ✅ |
+| 智能体管理 | — | ✅ | ✅ | ✅ |
+| OpenAI 兼容代理 | — | ✅ | — | — |
+| 用户注册/登录 | — | ✅ | ✅ | ✅ |
+| 积分充值 | — | ✅ | ✅ | ✅ |
 | API Key 管理 | — | ✅ | — | — |
 | 帮助中心 | — | ✅ | — | — |
 | 用户管理 | ✅ | — | — | — |
@@ -125,18 +136,19 @@ VibeBase Web ──┘                                  │
 | 角色权限 (RBAC) | ✅ | — | — | — |
 | 充值订单管理 | ✅ | — | — | — |
 | 收入统计看板 | ✅ | — | — | — |
+| 模型供应商配置 | ✅ | — | — | — |
 | AI 能力配置 | ✅ | — | — | — |
-| API 调用日志 | ✅ | — | — | — |
+| API 调用日志 + Token 统计 | ✅ | — | — | — |
 | 工单处理 | ✅ | — | — | — |
 | 公告管理 | ✅ | — | — | — |
 | 系统配置 | ✅ | — | — | — |
 | 仪表盘趋势图 | ✅ | — | — | — |
-| 免签约收款（微信/支付宝） | ✅ | ✅* | ✅* | ✅* |
+| 免签约收款（微信/支付宝） | ✅ | ✅ | ✅ | ✅ |
 | 支付订单 / 回调入账 | ✅ | — | — | — |
 | 收款二维码管理 | ✅ | — | — | — |
 | 多租户 / 应用接入 | ✅ | — | — | — |
 
-> ✅* = VibeApp 和 Vibe-Mp-H5 当前处于脚手架阶段，业务页面待开发，但技术栈和目录已就位；其充值流程最终由 VibePay 支付中台统一承接。
+> VibeApp 和 Vibe-Mp-H5 的核心业务功能（AI 对话、登录、充值、积分、历史等）已完整开发。
 
 ---
 
@@ -227,8 +239,9 @@ Vibe-Mp-H5: cd Vibe-Mp-H5 && pnpm dev:h5 → :5174
 | 角色权限 | `/roles` | 4 预置角色 + 权限矩阵（JSON）；新建/编辑/删除自定义角色 |
 | 充值订单 | `/recharge-orders` | 订单号 / 套餐 / 金额 / 积分 / 支付方式 / 状态；取消待支付订单 |
 | 收入统计 | `/income` | 总收入 / 本月 / 今日 / 待结算；趋势图、支付方式占比 |
+| 模型供应商 | `/llm-providers` | 名称 / 供应商类型 / API Key（加密）/ Base URL / 模型列表 / 优先级；测试连通性 |
 | AI 能力配置 | `/abilities` | 能力 ID / 名称 / 分类 / 积分单价 / 调用量；上架/下架、定价编辑 |
-| API 调用日志 | `/api-logs` | 用户 / API Key / 能力 / 耗时 / 积分消耗 / 状态；分页筛选 |
+| API 调用日志 | `/api-logs` | 用户 / API Key / 能力 / 耗时 / 模型 / Token 用量 / 积分消耗 / 状态；汇总卡 + 趋势图 |
 | 工单处理 | `/tickets` | 状态流转：待处理→处理中→已解决→已关闭；优先级标记 |
 | 公告管理 | `/announcements` | 标题 / 类型（system/feature/price）/ 发布 / 置顶 / 下线 |
 | 系统设置 | `/settings/system` | 平台名称、客服邮箱、ICP 备案、频率限制、并发数、2FA、支付配置 |
@@ -276,25 +289,28 @@ cd VibeAdmin/vibe-admin-web && corepack enable && pnpm install && pnpm dev
 | 后端 | FastAPI（venv + requirements.txt，Python ≥ 3.10） |
 | 数据库 | PostgreSQL（与 VibeAdmin 共享 `vibe` 库） |
 | AI 集成 | OpenAI SDK + LangChain Core |
+| 代理端点 | OpenAI 兼容 `/v1/chat/completions`（Bearer vb-xxx 鉴权 + SSE 流式） |
+| 加密 | cryptography（Fernet 对称加密，API Key 加密入库） |
 
 ### 功能模块
 
 | 功能 | 路由 | 说明 |
 | --- | --- | --- |
 | 登录/注册 | `/login`, `/register` | 邮箱/用户名注册登录 |
-| AI 对话 | `/chat` | 多 Agent 切换（Agent / MCPAgent），Markdown 渲染 |
-| 控制台概览 | `/console` | 积分余额、用量概览 |
-| 用量分析 | `/console/analytics` | API 调用趋势图、消耗统计 |
-| 个人设置 | `/user/profile` | 昵称、头像、简介 |
-| 安全中心 | `/user/security` | 修改密码 |
-| 充值套餐 | `/recharge` | 多档积分套餐选择（微信/支付宝） |
-| 充值记录 | `/recharge/records` | 历史充值订单 |
-| 积分消费记录 | `/recharge/points` | 积分使用明细 |
-| AI 能力列表 | `/ability` | 查看 AI 能力详情 |
-| API Key 管理 | `/apikey` | 创建/删除/禁用 API Key |
-| 系统公告 | `/announcement` | 平台通知列表 |
-| 帮助中心 | `/help` | 使用帮助文档 |
-| 角色权限 | `/role` | 查看自己的角色和权限 |
+| AI 对话 | `/app/chat` | 流式 SSE 对话，模型选择器，Deepseek/OpenAI 兼容 |
+| 智能体管理 | `/app/console/agent` | 创建/编辑/删除 Agent（自定义 system_prompt + 模型绑定） |
+| 控制台概览 | `/app/console/dashboard` | 积分余额、用量概览 |
+| 用量分析 | `/app/console/analytics` | API 调用趋势图、消耗统计 |
+| 个人设置 | `/app/console/settings` | 昵称、头像、简介 |
+| 安全中心 | `/app/console/security` | 修改密码 |
+| 充值套餐 | `/app/console/recharge-package` | 多档积分套餐选择（微信/支付宝） |
+| 充值记录 | `/app/console/recharge-record` | 历史充值订单 |
+| 积分消费记录 | `/app/console/points-consume` | 积分使用明细 |
+| VibeBase 源码 | `/app/console/recharge-package` | 购买版本、我的会员、源码交付 |
+| AI 能力列表 | `/app/console/api-ability` | 查看 AI 能力详情 |
+| API Key 管理 | `/app/console/api-key` | 创建/删除/禁用 vb-xxx API Key（供第三方调用代理端点） |
+| 系统公告 | `/app/console/announcement` | 平台通知列表 |
+| 帮助中心 | `/app/console/help` | 使用帮助文档 |
 
 ### 设计原型
 
@@ -617,7 +633,10 @@ VibeCoding/
 | `message_likes/downs` | C 端 | 反馈 | Base 产生 |
 | `recharge_orders` | 共享 | 充值订单 | Base 产生，Admin 管理 |
 | `abilities` | 共享 | AI 能力配置 | Admin 配置，Base 消费 |
-| `api_logs` | 共享 | API 调用日志 | Base 产生，Admin 查看 |
+| `api_logs` | 共享 | API 调用日志（含 Token 用量） | Base 产生，Admin 查看 |
+| `llm_providers` | 共享 | 模型供应商配置（API Key 加密存储） | Admin 配置，Base 代理读取 |
+| `agents` | C 端 | 轻量智能体（自定义 system_prompt + 模型绑定） | Base 产生 |
+| `api_keys` | C 端 | 用户 API Key（vb-xxx，代理端点鉴权用） | Base 管理 |
 | `announcements` | 共享 | 系统公告 | Admin 发布，Base 展示 |
 | `tickets` | 共享 | 用户工单 | Base 提交，Admin 处理 |
 | `tasks` | 共享 | 运营任务 | 仅 Admin |
@@ -643,11 +662,13 @@ VibeCoding/
 
 | 服务 | 端口 | 说明 |
 | --- | --- | --- |
-| VibeAdmin 前端（开发） | 5173 | `pnpm dev` |
+| VibeAdmin 前端（开发） | 5173 / 5183 | `pnpm dev`；5173 被占用时用 5183 |
 | VibeAdmin 前端（Docker） | 80 | `docker compose up` |
 | VibeAdmin 后端 | 8080 | FastAPI 接口 + `/docs` |
+| VibeBase 前端（开发） | 5175 / 5185 | `npm run dev`；5175 被占用时用 5185 |
 | VibeBase 前端（Docker） | 80 | `docker-compose up` |
 | VibeBase 后端 | 8081 | FastAPI 接口 + `/docs` |
+| **OpenAI 兼容代理** | 8081 | `POST /v1/chat/completions`（Bearer vb-xxx 鉴权） |
 | VibePay 后端 | 8080 | Spring Boot（线上 `pay.vibeadmin.cn`） |
 | VibePay PostgreSQL | 5432 | 支付库 `vibepay`（独立实例） |
 | Vibe-Mp-H5（H5 开发） | 5174 | `pnpm dev:h5` |

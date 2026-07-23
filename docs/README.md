@@ -14,6 +14,7 @@
 | --- | --- |
 | [getting-started.md](guides/getting-started.md) | 各子项目的本地/源码运行方式 |
 | [deployment.md](guides/deployment.md) | Docker / 容器化部署要点与端口对照 |
+| [verify_proxy.md](verify_proxy.md) | OpenAI 兼容代理端点端到端验证（curl + Python/Dart SDK 示例） |
 | [STATUS.md](STATUS.md) | 各后端接口实现状态 + 未实现功能待办清单（TODO） |
 
 ## 子项目文档入口
